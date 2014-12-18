@@ -1,0 +1,4 @@
+image: bradrydzewski/python:2.7
+script:
+    - python -m py_compile app.py
+    - python app_test.py
