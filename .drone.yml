@@ -1,4 +1,5 @@
 image: bradrydzewski/python:2.7
 script:
+    - pip install flask
     - python -m py_compile app.py
     - python app_test.py
