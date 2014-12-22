@@ -1,32 +1,82 @@
-from flask import Flask, jsonify, request, abort
+from flask import Flask, jsonify, request, abort, make_response
+import uuid
 
+# Flask light-weight web server.
 server = Flask(__name__)
 
 
+# In-memory Databases - Dynamic Dictionaries
+orders = dict()
+products = ['FiOS','SONET']
+bad_countries = []
+bad_states = []
+
+
+
+##########################
+##### REST SERVICES ######
+##########################
+
+# For load-balancing checks
 @server.route('/', methods=['GET'])
 def get_root():
-    return "Hello, cyberworld!"
+    return "OK"
 
+# Get a specific order by calling /ovs/orders/<order_id>
+@server.route('/ovs/orders/<order_id>', methods=['GET'])
+def get_order(order_id):
+    # if the id is on our 'orders' database return it, if not, return 404
+    if orders.has_key(str(order_id)):
+        return jsonify({'order': orders.get(str(order_id))})
+    else:
+        abort(404)
 
-@server.route('/<name>', methods=['GET'])
-def get_name(name):
-    return "Hello, " + name + "!"
-
-
+# Order Validation Service
 @server.route('/ovs/orders', methods=['POST'])
-def validate_order():
-    print "HEY: " + str(request.json)
-    if (request.json['address'] == ""):
-        return jsonify({'error': 'address field is empty'}), 400
-    if (request.json['name'] == ""):
-        return jsonify({'error': 'name field is empty'}), 400
-    if (request.json['productType'] == ""):
-        return jsonify({'error': 'orderType field is empty'}), 400
-    
-    
-    return str(request.json)
-    
+def create_order():
 
+    # Get the Json order from the request
+    new_order = request.json
+
+    # validate order
+    valid,error_msg = order_field_validation(new_order)
+    # If not valid, return status 400 with a json body containing the error message.
+    if not valid:
+        return jsonify({'error': error_msg}), 400
+
+    # Generate an ID for this order.
+    order_id = uuid.uuid4()
+
+    # Add the ID to the order json object
+    new_order['id'] = str(order_id.hex)
+
+    # Add the order to the database
+    orders[str(order_id.hex)] = new_order
+
+    # Returns the order created with generated ID
+    return jsonify(new_order)
+
+
+
+
+##########################
+#### HELPER FUNCTIONS ####
+##########################
+
+# Order Validation, returns a tuple, (boolean,string)
+def order_field_validation(order={}):
+
+    if order:
+        # Returns (True,'') if order is not empty.
+        return (True,'')
+    else:
+        # Return (False,'order is empty') if order is empty
+        return (False,'order is empty')
+
+# Helper respond method for 404 errors
+@server.errorhandler(404)
+def not_found(error):
+    return make_response(jsonify({'error': 'Not found'}), 404)
 
 
 if __name__ == '__main__':
