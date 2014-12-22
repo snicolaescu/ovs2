@@ -22,6 +22,8 @@ bad_states = []
 def get_root():
     return "OK"
 
+
+
 # Get a specific order by calling /ovs/orders/<order_id>
 @server.route('/ovs/orders/<order_id>', methods=['GET'])
 def get_order(order_id):
@@ -31,13 +33,14 @@ def get_order(order_id):
     else:
         abort(404)
 
+
+
 # Order Validation Service
 @server.route('/ovs/orders', methods=['POST'])
 def create_order():
 
     # Get the Json order from the request
     new_order = request.json
-
     # validate order
     valid,error_msg = order_field_validation(new_order)
     # If not valid, return status 400 with a json body containing the error message.
@@ -46,13 +49,10 @@ def create_order():
 
     # Generate an ID for this order.
     order_id = uuid.uuid4()
-
     # Add the ID to the order json object
     new_order['id'] = str(order_id.hex)
-
     # Add the order to the database
     orders[str(order_id.hex)] = new_order
-
     # Returns the order created with generated ID
     return jsonify(new_order)
 
@@ -73,10 +73,14 @@ def order_field_validation(order={}):
         # Return (False,'order is empty') if order is empty
         return (False,'order is empty')
 
+
+
 # Helper respond method for 404 errors
 @server.errorhandler(404)
 def not_found(error):
     return make_response(jsonify({'error': 'Not found'}), 404)
+
+
 
 
 if __name__ == '__main__':
