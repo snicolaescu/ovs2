@@ -7,7 +7,7 @@ server = Flask(__name__)
 
 # In-memory Databases - Dynamic Dictionaries
 orders = dict()
-products = ['FiOS','SONET']
+products = ['FiOS','SONET', 'VOD']
 bad_countries = []
 bad_states = []
 
@@ -37,7 +37,7 @@ def get_order(order_id):
 
 # Order Validation Service
 @server.route('/ovs/orders', methods=['POST'])
-def create_order():
+def post_order():
 
     # Get the Json order from the request
     new_order = request.json
